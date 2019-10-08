@@ -110,7 +110,6 @@ bool exprType::chkOperator(const char sym)
 	case '/':
 		return true;
 		break;
-
 	default:
 		return false;
 	}
@@ -120,66 +119,77 @@ void exprType::convertToPostfix()
 {
 	stackType<char> myStack; //initialize stack
 	int i = 0;
+	bool chk = false;
 
 	infx.append(")"); 
 	myStack.push('(');
 
-	while (i < infx.length()) //Loop through the infix expression
+	while ((i < infx.length()) && !chk) //Loop through the infix expression
 	{
-		if (chkOperator(infx[i])) //If the infix element is an operator
+		if (infx[i] != '^' && infx[i] != '%')
 		{
-			if (chkOperator(myStack.top())) //If the top element in the stack is an operator
+			if (chkOperator(infx[i])) //If the infix element is an operator
 			{
-				if (precedence(infx[i], myStack.top()) == 0) //If both operators have equal precedence
+				if (chkOperator(myStack.top())) //If the top element in the stack is an operator
 				{
-					pfx = pfx + myStack.top(); //Write the stack element to Postfix and pop the stack
+					if (precedence(infx[i], myStack.top()) == 0) //If both operators have equal precedence
+					{
+						pfx = pfx + myStack.top(); //Write the stack element to Postfix and pop the stack
 						myStack.pop();
+					}
+					else
+					{
+						if (precedence(infx[i], myStack.top()) == 1) //Else If sym1 has greater precedence than sym2
+						{
+							myStack.push(infx[i]); //Push the next infix element to the stack
+							i++;
+						}
+						else
+						{
+							pfx = pfx + myStack.top(); //Else write the stack element to postfix and pop the stack
+							myStack.pop();
+						}
+					}
 				}
 				else
 				{
-					if (precedence(infx[i], myStack.top()) == 1) //Else If sym1 has greater precedence than sym2
+					myStack.push(infx[i]); //Else push the next infix element to the stack
+					i++;
+				}
+			}
+			else
+			{
+				if (infx[i] == ')') //Else if the infix element is ')'
+				{
+					while (myStack.top() != '(')
 					{
-						myStack.push(infx[i]); //Push the next infix element to the stack
+						pfx = pfx + myStack.top(); //Write each stack element to postfix and pop the stack
+						myStack.pop();
+					}
+					myStack.pop();
+					i++;
+				}
+				else
+				{
+					if (infx[i] == '(') //If the next infix element is '('
+					{
+						myStack.push(infx[i]); //Push the element to the stack
 						i++;
 					}
 					else
 					{
-						pfx = pfx + myStack.top(); //Else write the stack element to postfix and pop the stack
-						myStack.pop();
+						pfx = pfx + infx[i]; //Else write the next element to postfix
+						i++;
 					}
 				}
-			}
-			else
-			{
-				myStack.push(infx[i]); //Else push the next infix element to the stack
-				i++;
 			}
 		}
 		else
 		{
-			if (infx[i] == ')') //Else if the infix element is ')'
-			{
-				while (myStack.top() != '(') 
-				{
-					pfx = pfx + myStack.top(); //Write each stack element to postfix and pop the stack
-					myStack.pop();
-				}
-				myStack.pop();
-				i++;
-			}
-			else
-			{
-				if (infx[i] == '(') //If the next infix element is '('
-				{
-					myStack.push(infx[i]); //Push the element to the stack
-					i++;
-				}
-				else
-				{
-					pfx = pfx + infx[i]; //Else write the next element to postfix
-					i++;
-				}
-			}
+			cout << "\nValid operations are +, -, * and /. Please try again!";
+			chk = true;
+			assert(chk == true);
+			pfx = "Invalid Operator";
 		}
 	}
 }
